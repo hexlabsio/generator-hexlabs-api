@@ -1,0 +1,17 @@
+name: Build
+concurrency: RUN_ONE
+on:
+  push:
+    branches: []
+jobs:
+
+  build-api-and-sdk:
+    uses: hexlabsio/actions/.github/workflows/build-and-publish-api.yml@main
+    permissions:
+      contents: read
+      packages: write
+    with:
+      service: <%= name %>-service
+      sdk-version: '1.0'
+    secrets:
+      npm-token: ${{secrets.NPM_PACKAGES_TOKEN}}

@@ -1,0 +1,76 @@
+name: Release <%= capitalize(environment.name) %>
+concurrency: RUN_ONE_<%= environment.name.toUpperCase() %>
+
+on:
+  <% if(environment.isSecond) { %>release:
+    types: [ published ]<% } %>
+    <% if(!environment.isSecond) { %>workflow_run:
+      workflows: [ <% if(environment.isFirst) { %>'Build'<% } %><% if(!environment.isFirst) { %>'Release <%= capitalize(environment.previous) %>'<% } %> ]
+      types: [ completed ]
+      branches:
+        - 'main'<% } %>
+jobs:
+
+  download:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+      actions: read
+    steps:
+      - uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+          commit: ${{github.sha}}
+          github_token: ${{secrets.GITHUB_TOKEN}}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: <%= name %>-api
+          path:
+            <%= name %>-api/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path:
+            build/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: certificate
+          path:
+            certificate/
+  deploy-cert:
+    needs: download
+    uses: gitboard-io/workflows/.github/workflows/kloudformation-deploy.yml@main
+    permissions:
+      contents: read
+      id-token: write
+    secrets:
+      npm-token: ${{secrets.NPM_PACKAGES_TOKEN}}
+    with:
+      environment: <%= environment.name %>
+      aws-account: <%= environment.awsAccountId %>
+      region: us-east-1
+      stack: certificate
+      namespace: <%= namespace %>-<%= name %>-cert
+      iam-role-name: GithubActionsRole
+      deploy-command: npm run deploy:certs
+
+  deploy:
+    needs: deploy-cert
+    uses: gitboard-io/workflows/.github/workflows/kloudformation-deploy.yml@main
+    permissions:
+      contents: read
+      id-token: write
+    secrets:
+      npm-token: ${{secrets.NPM_PACKAGES_TOKEN}}
+    with:
+      environment: <%= environment.name %>
+      aws-account: <%= environment.awsAccountId %>
+      region: eu-west-1
+      stack: <%= name %>-service
+      input-args: -s <%= namespace %>-hosted-zone-<%= environment.name %> us-east-1:<%= namespace %>-<%= name %>-cert-<%= environment.name %> <%= namespace %>-<%= name %>-<%= environment.name %>
+      namespace: <%= namespace %>-<%= name %>
+      iam-role-name: GithubActionsRole
