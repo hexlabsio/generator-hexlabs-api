@@ -1,5 +1,5 @@
 {
-  "name": "generator-hexlabs-api",
+  "name": "@hexlabs/generator-hexlabs-api",
   "type": "module",
   "description": "Generate an API like HexLabs does",
   "keywords": [
