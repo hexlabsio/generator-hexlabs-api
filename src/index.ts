@@ -51,16 +51,24 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
         default: "account"
       },
       {
-        type: "input",
+        type: "list",
         name: "httpLibrary",
-        message: "Which http library would you like? [hexlabs, middy]",
-        default: "middy"
+        message: "Which middleware library would you like?",
+        default: "middy",
+        choices: [
+          { name: 'HexLabs (@hexlabs/http-api-ts)', value: 'hexlabs' },
+          { name: 'Middy.js (middy.js.org)', value: 'middy' },
+        ]
       },
       {
-        type: "input",
+        type: "list",
         name: "databaseTechnology",
-        message: "Would you like to use a data source? options are [DynamoDB, None]",
-        default: "DynamoDB"
+        message: "Would you like to use a data source?",
+        default: "DynamoDB",
+        choices: [
+          { name: 'DynamoDB', value: 'DynamoDB' },
+          { name: 'None', value: 'none' },
+        ]
       }
     ]);
     this.answers.capitalize = (text: string) => text.substring(0, 1).toUpperCase() +text.substring(1).toLowerCase();

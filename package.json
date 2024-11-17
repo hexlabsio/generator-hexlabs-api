@@ -19,7 +19,7 @@
     "prebuild": "rimraf generators",
     "build": "tsc --project tsconfig.json && cp -r src/templates generators/templates",
     "pretest": "rimraf ../generator-test && mkdir ../generator-test",
-    "test": "cd ../generator-test && yo ../generator-hexlabs/generators/api/index.js",
+    "test": "cd ../generator-test && yo ../generator-hexlabs-api/generators/index.js",
     "lint": "eslint **/*.ts"
   },
   "eslintConfig": {
