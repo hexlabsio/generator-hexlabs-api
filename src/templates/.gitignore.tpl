@@ -1,0 +1,10 @@
+.DS_Store
+.idea
+build
+dist*
+generated
+node_modules
+dynamodb-tables.cjs
+coverage
+junit.xml
+parameters.json

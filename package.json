@@ -1,0 +1,101 @@
+{
+  "name": "@hexlabsio/generator-hexlabs-api",
+  "type": "module",
+  "description": "Generate an API like HexLabs does",
+  "keywords": [
+    "yeoman-generator"
+  ],
+  "version": "1.0.0",
+  "types": "dist/cli/index.d.ts",
+  "module": "dist/cli/index.js",
+  "files": [
+    "generators"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "scripts": {
+    "prebuild": "rimraf generators",
+    "build": "tsc --project tsconfig.json && cp -r src/templates generators/templates",
+    "pretest": "rimraf ../generator-test && mkdir ../generator-test",
+    "test": "cd ../generator-test && yo ../generator-hexlabs/generators/api/index.js",
+    "lint": "eslint **/*.ts"
+  },
+  "eslintConfig": {
+    "extends": [
+      "eslint:recommended",
+      "plugin:jest/recommended",
+      "plugin:@typescript-eslint/recommended"
+    ],
+    "env": {
+      "node": true,
+      "es6": true,
+      "jest/globals": true
+    },
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaVersion": 2022,
+      "sourceType": "module"
+    },
+    "plugins": [
+      "@typescript-eslint/eslint-plugin",
+      "jest"
+    ],
+    "rules": {
+      "@typescript-eslint/no-explicit-any": 0,
+      "@typescript-eslint/no-non-null-assertion": 0,
+      "@typescript-eslint/no-empty-function": 0,
+      "@typescript-eslint/explicit-function-return-type": 0,
+      "@typescript-eslint/ban-types": 0
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hexlabsio/generator-hexlabs-api.git"
+  },
+  "author": "hexlabs",
+  "bugs": {
+    "url": "https://github.com/hexlabsio/generator-hexlabs-api/issues"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint && npm test"
+    }
+  },
+  "jest": {
+    "transform": {
+      ".(ts)": [
+        "ts-jest",
+        {
+          "useESM": true
+        }
+      ]
+    },
+    "preset": "ts-jest/presets/default-esm",
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
+    "reporters": [
+      "default",
+      "jest-junit"
+    ],
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ]
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.12",
+    "@types/json-schema": "^7.0.15",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "yeoman-generator": "^7.3.3"
+  }
+}
