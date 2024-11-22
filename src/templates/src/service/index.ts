@@ -5,6 +5,6 @@ export default class <%= capitalize(name) %>Service extends Crud<typeof tables.<
   constructor(
     private readonly <%= name %>Table: TableClient<typeof tables.<%= name %>Table>,
   ) {
-  super(accountTable)
+  super(<%= name %>Table)
 }
 }

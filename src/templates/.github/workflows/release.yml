@@ -12,6 +12,7 @@ on:
 jobs:
 
   download:
+    <% if(!environment.isSecond) { %>if: ${{ github.event.workflow_run.conclusion == 'success' }}<% } %>
     runs-on: ubuntu-latest
     permissions:
       id-token: write

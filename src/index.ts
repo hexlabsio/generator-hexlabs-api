@@ -100,7 +100,7 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
         },
         {
           type: "input",
-          name: "account",
+          name: "awsAccountId",
           message: `What is the aws account id for environment ${i+1}`,
           default: '12345678910'
         }
@@ -146,7 +146,10 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
       const previous = index > 0 ? list[index - 1]: undefined;
       const isFirst = index === 0;
       const isSecond = index === 1;
-      this.fs.copyTpl(this.templatePath('.github/workflows/release.yml'), this.destinationPath(`.github/workflows/release-${environment.name}.yml`), {...this.answers, environment: {...environment, isFirst, isSecond, previous: previous?.name}}, {});
+      this.fs.copyTpl(this.templatePath('.github/workflows/release.yml'), this.destinationPath(`.github/workflows/release-${environment.name}.yml`), {
+        ...this.answers,
+        environment: {...environment, isFirst, isSecond, previous: previous?.name}
+      }, {});
     });
     this.fs.copyTpl(this.templatePath('.github/workflows/build.yml'), this.destinationPath(`.github/workflows/build.yml`), {...this.answers}, {});
     this.fs.copyTpl(this.templatePath('.github/workflows/pull-request-checks.yml'), this.destinationPath(`.github/workflows/pull-request-checks.yml`), {...this.answers}, {});

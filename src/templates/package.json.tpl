@@ -51,8 +51,10 @@
      "@middy/http-json-body-parser": "^5.5.1",
      "@middy/http-router": "^5.5.1",
      "@middy/validator": "^5.5.1",<% } %>
-    "aws-lambda": "^1",
-    "uuid": "^9"
+     "aws-lambda": "^1",
+     "uuid": "^9",
+     "zod": "^3",
+    "zod-to-json-schema": "^3"
   },
   "devDependencies": {
     "@hexlabs/cloudformation-ts": "^3",

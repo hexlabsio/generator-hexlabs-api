@@ -1,6 +1,10 @@
-import { OpenApiSpecificationBuilder } from '@hexlabs/schema-api-ts';
-import schemas from './model';
+import { OpenApiSpecificationBuilder, ZodSchemaBuilder } from '@hexlabs/schema-api-ts';
+import * as model from './model';
 import servers from './servers';
+
+const schemas = ZodSchemaBuilder.create()
+  .add("<%= capitalize(naming.name) %>", model.<%= capitalize(naming.name) %>)
+  .build()
 
 export default OpenApiSpecificationBuilder.create(schemas, {
   title: '<%= capitalize(namespace) %> <%= capitalize(name) %> Api',
