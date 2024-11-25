@@ -160,6 +160,7 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
     this.fs.copyTpl(this.templatePath(isHexlabs ? 'api/hexlabs.ts.tpl': 'api/middy.ts.tpl', ), this.destinationPath('src/api/index.ts'), {...this.answers}, {})
     this.fs.copyTpl(this.templatePath(isHexlabs ? 'api/index-hexlabs.ts.tpl': 'api/index-middy.ts.tpl', ), this.destinationPath('src/index.ts'), {...this.answers}, {})
     this.fs.copyTpl(this.templatePath('src'), this.destinationPath('src'), {...this.answers}, {})
+    this.fs.copyTpl(this.templatePath('sdk'), this.destinationPath('sdk'), {...this.answers}, {})
     this.answers.environments.forEach((environment, index, list) => {
       const previous = index > 0 ? list[index - 1]: undefined;
       const isFirst = index === 0;
