@@ -1,0 +1,8 @@
+{
+  "ENVIRONMENT": "<%= environment.name %>",
+  "DOMAIN": "<%= environment.domain %>",
+  "HOST": "https://<%= name %>.api.<%= environment.domain %>",
+  "ALLOWEDORIGINS": "https://<%= environment.domain %>",
+  "<%= capitalize(namespace) %><%= capitalize(name) %>ApiCert": { "envName": "<%= capitalize(namespace) %><%= capitalize(name) %>ApiCert" },
+  "<%= capitalize(namespace) %>HostedZoneId": { "envName": "<%= capitalize(namespace) %>HostedZoneId" }
+}

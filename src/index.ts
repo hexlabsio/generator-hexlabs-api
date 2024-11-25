@@ -12,10 +12,11 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
     namespace: string;
     port: string;
     name: string;
+    domain: string;
     numEnvs: number;
     databaseTechnology: 'DynamoDB' | 'None';
     httpLibrary: 'hexlabs' | 'middy';
-    environments: { name: string; account: string; }[]
+    environments: { name: string; account: string; prefix: string }[]
     model: {
       capital: string;
       lower: string;
@@ -47,8 +48,13 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
       {
         type: "input",
         name: "namespace",
-        message: "What namespace do you want to have across everything?",
+        message: "What namespace do you want to have across everything",
         default: 'hexlabs'
+      },
+      {
+        type: "input",
+        name: "domain",
+        message: "What domain do you have for this project",
       },
       {
         type: "input",
@@ -96,7 +102,13 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
           type: "input",
           name: "name",
           message: `What is environment ${i+1} called`,
-          default: ["dev", "test", "prod"][i] ?? "dev"
+          default: ["development", "test", "production"][i] ?? "development"
+        },
+        {
+          type: "input",
+          name: "prefix",
+          message: `What is the domain prefix for environment ${i+1}`,
+          default: ["dev", "test", ""][i] ?? "dev"
         },
         {
           type: "input",
@@ -146,13 +158,24 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
       const previous = index > 0 ? list[index - 1]: undefined;
       const isFirst = index === 0;
       const isSecond = index === 1;
-      this.fs.copyTpl(this.templatePath('.github/workflows/release.yml'), this.destinationPath(`.github/workflows/release-${environment.name}.yml`), {
+      const props = {
         ...this.answers,
-        environment: {...environment, isFirst, isSecond, previous: previous?.name}
-      }, {});
+        environment: {
+          ...environment,
+          isFirst,
+          isSecond,
+          previous: previous?.name,
+          domain: (environment.prefix ? `${environment.prefix}.` : '') + this.answers.domain
+        }
+      };
+      this.fs.copyTpl(this.templatePath('.github/workflows/release.yml'), this.destinationPath(`.github/workflows/release-${environment.name}.yml`), props, {});
+      this.fs.copyTpl(this.templatePath('stack/certificate/properties/environment.json'), this.destinationPath(`stack/certificate/properties/${environment.name}.json`), props, {});
+      this.fs.copyTpl(this.templatePath('stack/service-properties/environment.json'), this.destinationPath(`stack/${this.answers.name}-service/properties/${environment.name}.json`), props, {});
     });
     this.fs.copyTpl(this.templatePath('.github/workflows/build.yml'), this.destinationPath(`.github/workflows/build.yml`), {...this.answers}, {});
     this.fs.copyTpl(this.templatePath('.github/workflows/pull-request-checks.yml'), this.destinationPath(`.github/workflows/pull-request-checks.yml`), {...this.answers}, {});
+    this.fs.copyTpl(this.templatePath('stack/certificate/template.ts'), this.destinationPath(`stack/certificate/template.ts`), {...this.answers}, {});
+    this.fs.copyTpl(this.templatePath('stack/service'), this.destinationPath(`stack/${this.answers.name}-service`), {...this.answers}, {});
   }
 
   end() {
