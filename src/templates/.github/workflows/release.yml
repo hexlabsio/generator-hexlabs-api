@@ -72,6 +72,6 @@ jobs:
       aws-account: <%= environment.awsAccountId %>
       region: eu-west-1
       stack: <%= name %>-service
-      input-args: -s <%= namespace %>-hosted-zone-<%= environment.name %> us-east-1:<%= namespace %>-<%= name %>-cert-<%= environment.name %> <%= namespace %>-<%= name %>-<%= environment.name %>
+      input-args: -s <%= namespace %>-hosted-zone-<%= environment.name %> <%= namespace %>-user-<%= environment.name %> us-east-1:<%= namespace %>-<%= name %>-cert-<%= environment.name %> <%= namespace %>-<%= name %>-<%= environment.name %>
       namespace: <%= namespace %>-<%= name %>
       iam-role-name: GithubActionsRole

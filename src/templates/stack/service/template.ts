@@ -16,7 +16,8 @@ export default templateBuilder.create('<%= name %>-service/template.json')
     HOST: {type: 'String'},
     ENVIRONMENT: {type: 'String'},
     <%= capitalize(namespace) %><%= capitalize(name) %>ApiCert: { type: 'String' },
-    <%= capitalize(namespace) %>HostedZoneId: { type: 'String' }
+    <%= capitalize(namespace) %>HostedZoneId: { type: 'String' },
+    <%= capitalize(namespace) %>UserPoolArn: { type: 'String' }
   })
   .withCondition('IsProd', ({compare}) => compare.equals({ Ref: 'ENVIRONMENT' }, 'production'))
   .build((aws, params) => {
@@ -24,5 +25,5 @@ export default templateBuilder.create('<%= name %>-service/template.json')
     const codeProps = { s3Bucket: params.CodeBucket(), s3Key: params.CodeLocation()};
     const apiLambda = createApiLambda(aws, codeProps, params.HOST(), params.ALLOWEDORIGINS(), tables)
     grantTableAccess(apiLambda.role, 'TableAccess', Object.values(tables));
-    createApi(aws, params.ENVIRONMENT(), params.LinkHostedZoneId(), params.DOMAIN(), params['<%= capitalize(namespace) %><%= capitalize(name) %>ApiCert'](), apiLambda, userPool.attributes.Arn());
+    createApi(aws, params.ENVIRONMENT(), params.LinkHostedZoneId(), params.DOMAIN(), params['<%= capitalize(namespace) %><%= capitalize(name) %>ApiCert'](), apiLambda, params['<%= capitalize(namespace) %>UserPoolArn']());
 })
