@@ -108,7 +108,7 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
           type: "input",
           name: "prefix",
           message: `What is the domain prefix for environment ${i+1}`,
-          default: ["dev", "test", ""][i] ?? "dev"
+          default: ""
         },
         {
           type: "input",
