@@ -4,7 +4,7 @@ import { Value } from '@hexlabs/cloudformation-ts';
 const environmentBuilder = EnvironmentBuilder.create(
   'HOST',
   'ALLOWED_ORIGIN',
-  'TABLES_<%= naming.name.toUpperCase() %>',
+  'TABLES_<%= name.toUpperCase() %>',
 );
 
 export type ApiEnvironment = {

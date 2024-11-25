@@ -1,0 +1,25 @@
+{
+  "name": "@<%= githubOrg %>/<%= namespace %>-service-<%= name %>-sdk",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "build/index.mjs",
+  "types": "build/src/index.d.ts",
+  "author": "hexlabs",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "files": [
+    "build", "src"
+  ],
+  "scripts": {
+    "prebuild": "cp -r ../generated generated",
+    "build": "rollup -c "
+  },
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "rollup": "^4.2.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2"
+  }
+}

@@ -23,6 +23,6 @@ export function createApiLambda(aws: LambdaExpects, code: CodeProps, host: Value
     timeout: 30,
     memorySize: 2048,
     architectures: ['arm64'],
-    environment: lambdaVariables<ApiEnvironment>({ HOST: host, ALLOWED_ORIGIN: allowedOrigins, TABLES_ACCOUNT: tables.accountTable }),
+    environment: lambdaVariables<ApiEnvironment>({ HOST: host, ALLOWED_ORIGIN: allowedOrigins, TABLES_<%= name.toUpperCase() %>: tables.<%= name %>Table }),
   })
 }

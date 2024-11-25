@@ -1,5 +1,5 @@
 {
-  "name": "@link-ni/link-service-user",
+  "name": "@<%= githubOrg %>/<%= namespace %>-service-<%= name %>",
   "version": "0.0.1",
   "type": "module",
   "main": "build/index.mjs",

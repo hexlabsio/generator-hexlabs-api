@@ -47,6 +47,12 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
       },
       {
         type: "input",
+        name: "githubOrg",
+        message: "What organisation will this live under in GitHub",
+        default: 'hexlabsio'
+      },
+      {
+        type: "input",
         name: "namespace",
         message: "What namespace do you want to have across everything",
         default: 'hexlabs'
