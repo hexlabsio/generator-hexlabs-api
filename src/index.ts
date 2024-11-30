@@ -12,11 +12,13 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
     namespace: string;
     port: string;
     name: string;
+    deployment: 'cfts' | 'cdktf';
+    githubOrg: string;
     domain: string;
     numEnvs: number;
     databaseTechnology: 'DynamoDB' | 'None';
     httpLibrary: 'hexlabs' | 'middy';
-    environments: { name: string; account: string; prefix: string }[]
+    environments: { name: string; account: string; prefix: string; region: string }[]
     model: {
       capital: string;
       lower: string;
@@ -38,11 +40,11 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
       {
         type: "list",
         name: "deployment",
-        message: "Would you like to use cfts or terraform?",
-        default: "terraform",
+        message: "Would would you like to use for deploying infrastructure",
+        default: "cdktf",
         choices: [
-          { name: '@hexlabs/cloudformation-ts', value: 'cfts' },
-          { name: 'Terraform (cdk)', value: 'terraform-cdk' },
+          { name: '@hexlabs/cloudformation-ts (cfts)', value: 'cfts' },
+          { name: 'Terraform (cdktf)', value: 'cdktf' },
         ]
       },
       {
@@ -121,6 +123,12 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
           name: "awsAccountId",
           message: `What is the aws account id for environment ${i+1}`,
           default: '12345678910'
+        },
+        {
+          type: "input",
+          name: "region",
+          message: `What region is environment ${i+1} in`,
+          default: 'eu-west-1'
         }
         ]
       );
@@ -153,6 +161,24 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
     }
   }
 
+  private _stackEnvFiles(props: any) {
+    if (this.answers.deployment === 'cfts') {
+      this.fs.copyTpl(this.templatePath('cfts-stack/certificate/properties/environment.json'), this.destinationPath(`stack/certificate/properties/${props.environment.name}.json`), props, {});
+      this.fs.copyTpl(this.templatePath('cfts-stack/service-properties/environment.json'), this.destinationPath(`stack/${this.answers.name}-service/properties/${props.environment.name}.json`), props, {});
+    } else {
+      this.fs.copyTpl(this.templatePath('cdktf-stack/variables/environment.tfvars'), this.destinationPath(`stack/variables/${props.environment.name}.tfvars`), props, {});
+    }
+  }
+
+  private _stackFiles() {
+    if (this.answers.deployment === 'cfts') {
+      this.fs.copyTpl(this.templatePath('cfts-stack/certificate/template.ts'), this.destinationPath(`stack/certificate/template.ts`), {...this.answers}, {});
+      this.fs.copyTpl(this.templatePath('cfts-stack/service'), this.destinationPath(`stack/${this.answers.name}-service`), {...this.answers}, {});
+    } else {
+      this.fs.copyTpl(this.templatePath('cdktf-stack/stack'), this.destinationPath(`stack`), this.answers, {});
+    }
+  }
+
   writing() {
     this._filesForDataSource();
     const isHexlabs = this.answers.httpLibrary === 'hexlabs';
@@ -162,10 +188,10 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
     this.fs.copyTpl(this.templatePath('src'), this.destinationPath('src'), {...this.answers}, {})
     this.fs.copyTpl(this.templatePath('sdk'), this.destinationPath('sdk'), {...this.answers}, {})
     this.answers.environments.forEach((environment, index, list) => {
-      const previous = index > 0 ? list[index - 1]: undefined;
+      const previous = index > 0 ? list[index - 1] : undefined;
       const isFirst = index === 0;
       const isSecond = index === 1;
-      const props = {
+      const props= {
         ...this.answers,
         environment: {
           ...environment,
@@ -176,13 +202,11 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
         }
       };
       this.fs.copyTpl(this.templatePath('.github/workflows/release.yml'), this.destinationPath(`.github/workflows/release-${environment.name}.yml`), props, {});
-      this.fs.copyTpl(this.templatePath('stack/certificate/properties/environment.json'), this.destinationPath(`stack/certificate/properties/${environment.name}.json`), props, {});
-      this.fs.copyTpl(this.templatePath('stack/service-properties/environment.json'), this.destinationPath(`stack/${this.answers.name}-service/properties/${environment.name}.json`), props, {});
+      this._stackEnvFiles(props);
     });
     this.fs.copyTpl(this.templatePath('.github/workflows/build.yml'), this.destinationPath(`.github/workflows/build.yml`), {...this.answers}, {});
     this.fs.copyTpl(this.templatePath('.github/workflows/pull-request-checks.yml'), this.destinationPath(`.github/workflows/pull-request-checks.yml`), {...this.answers}, {});
-    this.fs.copyTpl(this.templatePath('stack/certificate/template.ts'), this.destinationPath(`stack/certificate/template.ts`), {...this.answers}, {});
-    this.fs.copyTpl(this.templatePath('stack/service'), this.destinationPath(`stack/${this.answers.name}-service`), {...this.answers}, {});
+    this._stackFiles();
   }
 
   end() {

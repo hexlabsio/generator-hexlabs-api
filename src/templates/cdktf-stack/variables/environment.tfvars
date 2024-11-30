@@ -1,0 +1,7 @@
+namespace = "<%= namespace %>"
+name = "<%= name %>"
+environment = "<%= environment.name %>"
+domain = "<%= environment.domain %>"
+host = "https://<%= name %>.api.<%= environment.domain %>"
+allowed_origins =  "https://<%= environment.domain %>"
+code_s3_bucket = "<%= namespace %>-deploys-<%= environment.region %>-<%= environment.name %>"

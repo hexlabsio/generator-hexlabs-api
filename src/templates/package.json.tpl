@@ -9,9 +9,11 @@
     "prebuild": "schema-api-ts generate --template <%= httpLibrary %> --apiVersion ${API_VERSION:-1.0.0} $(pwd)/src/schema/index.ts",
     "build": "rollup -c rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "start": "run-lambda start --cognito-claims $(pwd)/generated/<%= namespace %>-<%= name %>-api/paths.json handler $(pwd)/src/index.ts",
-    "translate": "cloudformation-ts translate $(pwd)/stack/${STACK:-<%= name %>-service}/template.ts",
+<% if(deployment === 'cdktf') { %>"init": "terraform -chdir=cdktf.out/stacks/stack init",
+    "plan": "terraform -chdir=cdktf.out/stacks/stack plan -var-file ../../../stack/variables/${ENVIRONMENT:-development}.tfvars",<% } %>
+<% if(deployment === 'cfts') { %>    "translate": "cloudformation-ts translate $(pwd)/stack/${STACK:-<%= name %>-service}/template.ts",
     "deploy": "cloudformation-ts deploy -r ${REGION} ${ARGS} -f $(pwd)/build -b <%= namespace %>-deploys-${REGION}-${ENVIRONMENT} -p ${NAMESPACE}/ -- ${NAMESPACE}-${ENVIRONMENT} ${STACK}/template.json",
-    "deploy:certs": "cloudformation-ts deploy -r ${REGION} ${ARGS} -- ${NAMESPACE}-${ENVIRONMENT} ${STACK}/template.json",
+    "deploy:certs": "cloudformation-ts deploy -r ${REGION} ${ARGS} -- ${NAMESPACE}-${ENVIRONMENT} ${STACK}/template.json",<% } %>
     "format:pretty": "prettier --single-quote --trailing-comma all --write './src/**.ts' './src/**/*.ts'",
     "format:lint": "eslint src/**.ts src/**/*.ts --fix",
 <% if(databaseTechnology === 'DynamoDB') { %>    "pretest": "npx tsx ./jest-setup.ts",<% } %>
@@ -57,7 +59,9 @@
     "zod-to-json-schema": "^3"
   },
   "devDependencies": {
-    "@hexlabs/cloudformation-ts": "^3",
+    <% if(deployment === 'cfts') { %>"@hexlabs/cloudformation-ts": "^3",<% } %>
+    <% if(deployment === 'cdktf') { %>"@cdktf/provider-archive": "^10.2.0",
+    "@cdktf/provider-aws": "19.44.0",<% } %>
     "@hexlabs/lambda-api-runner-ts": "^0",
     "@hexlabs/schema-api-ts": "^4",
     "@rollup/plugin-commonjs": "^25",

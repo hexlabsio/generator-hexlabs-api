@@ -1,5 +1,5 @@
 import { EnvironmentBuilder } from '@hexlabs/env-vars-ts';
-import { Value } from '@hexlabs/cloudformation-ts';
+<% if(deployment == 'cfts') { %>import { Value } from '@hexlabs/cloudformation-ts';<% } %>
 
 const environmentBuilder = EnvironmentBuilder.create(
   'HOST',
@@ -7,8 +7,9 @@ const environmentBuilder = EnvironmentBuilder.create(
   'TABLES_<%= name.toUpperCase() %>',
 );
 
-export type ApiEnvironment = {
+<% if(deployment == 'cfts') { %>export type ApiEnvironment = {
   [K in keyof ReturnType<typeof environmentBuilder.environment>]: Value<string>;
-};
+};<% } %>
+<% if(deployment == 'cdktf') { %>export type ApiEnvironment = ReturnType<typeof environmentBuilder.environment>;<% } %>
 
 export const apiEnv = () => environmentBuilder.environment();
