@@ -3,7 +3,7 @@ import { apiRuntime } from './runtime';
 import httpHeaderNormalizer from '@middy/http-header-normalizer'
 import cors from '@middy/http-cors'
 import httpErrorHandler from '@middy/http-error-handler'
-import httpRouterHandler, { Route } from '@middy/http-router'
+import httpRouterHandler from '@middy/http-router'
 
 function apiHandler() {
   const runtime = apiRuntime();

@@ -15,10 +15,10 @@ function lambdaVariables<T>(variables: T): LambdaFunctionEnvironment {
   };
 }
 
-
-export function apiLambda(scope: Construct, s3Bucket: string, s3Key: string, variables: Variables, tables: DynamoTables): LambdaFunction {
+export function apiLambda(scope: Construct, sha: string, s3Bucket: string, s3Key: string, variables: Variables, tables: DynamoTables): LambdaFunction {
   const role = apiLambdaRole(scope, Object.values(tables));
   return new LambdaFunction(scope, "api-lambda-function", {
+    sourceCodeHash: sha,
     functionName: `${variables.namespace}-${variables.name}-service-api-${variables.environment}`,
     timeout: 30,
     memorySize: 2048,
@@ -29,5 +29,5 @@ export function apiLambda(scope: Construct, s3Bucket: string, s3Key: string, var
     handler: 'index.handler',
     runtime: 'nodejs20.x',
     environment: lambdaVariables<ApiEnvironment>({ HOST: variables.host, ALLOWED_ORIGIN: variables.allowed_origins, TABLES_<%= name.toUpperCase() %>: tables.<%= name %>Table.name }),
-  })
+  });
 }

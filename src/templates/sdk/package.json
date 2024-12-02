@@ -1,5 +1,5 @@
 {
-  "name": "@<%= githubOrg %>/<%= namespace %>-service-<%= name %>-sdk",
+  "name": "@<%= githubOrg %>/<%= namespace %>-<%= name %>-service-sdk",
   "version": "1.0.0",
   "type": "module",
   "main": "build/index.mjs",

@@ -3,7 +3,7 @@ import * as model from './model';
 import servers from './servers';
 
 const schemas = ZodSchemaBuilder.create()
-  .add("<%= capitalize(naming.name) %>", model.<%= capitalize(naming.name) %>)
+  .add("<%= capitalize(name) %>", model.<%= capitalize(name) %>)
   .build()
 
 export default OpenApiSpecificationBuilder.create(schemas, {
@@ -25,12 +25,12 @@ export default OpenApiSpecificationBuilder.create(schemas, {
     '403': o.responseReference('Forbidden'),
   }))
   .add('paths', (o) => ({
-    '/<%= naming.name %>/{<%= naming.name %>Id}': {
+    '/{stage}/<%= name %>/{<%= name %>Id}': {
       get: {
-        operationId: 'get<%= capitalize(naming.name) %>',
-        parameters: [o.path('<%= naming.name %>Id')],
+        operationId: 'get<%= capitalize(name) %>',
+        parameters: [o.path('<%= name %>Id')],
         responses: {
-          200: o.response(o.jsonContent('<%= capitalize(naming.name) %>'), 'One <%= capitalize(naming.name) %>'),
+          200: o.response(o.jsonContent('<%= capitalize(name) %>'), 'One <%= capitalize(name) %>'),
         },
       },
     },

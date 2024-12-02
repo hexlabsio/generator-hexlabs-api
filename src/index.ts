@@ -201,11 +201,14 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
           domain: (environment.prefix ? `${environment.prefix}.` : '') + this.answers.domain
         }
       };
-      this.fs.copyTpl(this.templatePath('.github/workflows/release.yml'), this.destinationPath(`.github/workflows/release-${environment.name}.yml`), props, {});
+      this.fs.copyTpl(this.templatePath(`.github/${this.answers.deployment}/workflows/release.yml`), this.destinationPath(`.github/workflows/release-${environment.name}.yml`), props, {});
       this._stackEnvFiles(props);
     });
-    this.fs.copyTpl(this.templatePath('.github/workflows/build.yml'), this.destinationPath(`.github/workflows/build.yml`), {...this.answers}, {});
-    this.fs.copyTpl(this.templatePath('.github/workflows/pull-request-checks.yml'), this.destinationPath(`.github/workflows/pull-request-checks.yml`), {...this.answers}, {});
+    this.fs.copyTpl(this.templatePath(`.github/${this.answers.deployment}/workflows/build.yml`), this.destinationPath(`.github/workflows/build.yml`), {...this.answers}, {});
+    this.fs.copyTpl(this.templatePath(`.github/${this.answers.deployment}/workflows/pull-request-checks.yml`), this.destinationPath(`.github/workflows/pull-request-checks.yml`), {...this.answers}, {});
+    if(this.answers.deployment === 'cdktf') {
+      this.fs.copyTpl(this.templatePath(`.github/${this.answers.deployment}/actions`), this.destinationPath(`.github/actions`), {...this.answers}, {});
+    }
     this._stackFiles();
   }
 
