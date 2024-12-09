@@ -24,15 +24,17 @@ export default OpenApiSpecificationBuilder.create(schemas, {
     '401': o.responseReference('Unauthorized'),
     '403': o.responseReference('Forbidden'),
   }))
-  .add('paths', (o) => ({
-    '/{stage}/<%= name %>/{<%= name %>Id}': {
-      get: {
-        operationId: 'get<%= capitalize(name) %>',
-        parameters: [o.path('<%= name %>Id')],
+  .withAWSCognitoSecurityScheme('cognitoScheme', '${cognitoPoolEndpoint}', '${cognitoAppClientId}')
+  .withAWSLambdaApiGatewayIntegration('apiLambda', '${functions.handler}')
+  .withPath('<%= name %>', (path, oas) =>
+    path.resource('<%= name %>Id', path =>
+      path.get('get<%= capitalize(name) %>', {
+        'x-amazon-apigateway-integration': oas.awsLambdaApiGatewayIntegration.apiLambda,
+        security: [oas.securitySchemes.cognitoScheme()],
         responses: {
-          200: o.response(o.jsonContent('<%= capitalize(name) %>'), 'One <%= capitalize(name) %>'),
-        },
-      },
-    },
-  }))
+          200: oas.jsonResponse('<%= capitalize(name) %>', 'One <%= capitalize(name) %>')
+        }
+      })
+    )
+  )
   .build();

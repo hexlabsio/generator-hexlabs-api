@@ -45,7 +45,9 @@ jobs:
         run: |
           terraform \
           -chdir=cdktf.out/stacks/stack \
-          plan \
+          plan \<% if(type === 'user') { %>
+          -var google_client_id=${{ secrets.CLIENT_GOOGLE_ID_<%= environment.name.toUpperCase() %> }} \
+          -var google_client_secret=${{ secrets.CLIENT_GOOGLE_SECRET_<%= environment.name.toUpperCase() %> }} \<% } %>
           -var-file variables/<%= environment.name %>.tfvars \
           -out <%= environment.name %>.plan
       - name: 'Terraform Apply'

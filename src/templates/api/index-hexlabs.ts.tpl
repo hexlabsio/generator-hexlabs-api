@@ -1,9 +1,10 @@
 import { allFilters, CorsConfig, Handler } from '@hexlabs/http-api-ts';
 import {
   APIGatewayProxyEvent,
-  APIGatewayProxyResult,
+  APIGatewayProxyResult<% if(type === 'user') { %>,
+  CognitoUserPoolTriggerEvent<% } %>
 } from 'aws-lambda';
-import { apiRuntime } from './runtime';
+import { apiRuntime<% if(type === 'user') { %>,triggerRuntime<% } %> } from './runtime';
 
 export const handler: Handler<
   APIGatewayProxyEvent,
@@ -20,3 +21,8 @@ export const handler: Handler<
     corsConfig,
   )(environmentRuntime.api.routes())(event);
 };
+<% if(type === 'user') { %>
+export async function triggerHandler(event: CognitoUserPoolTriggerEvent) {
+  return triggerRuntime().triggers.handle(event);
+}
+<% } %>

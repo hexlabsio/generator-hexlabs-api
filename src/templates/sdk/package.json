@@ -12,7 +12,7 @@
     "build", "src"
   ],
   "scripts": {
-    "prebuild": "cp -r ../generated generated",
+    "prebuild": "cp -r ../generated generated<% if(type === 'user') { %> && cp ../src/claims.ts src/claims.ts<% } %>",
     "build": "rollup -c "
   },
   "devDependencies": {

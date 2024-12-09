@@ -1,20 +1,44 @@
 import { Apigatewayv2Api } from '@cdktf/provider-aws/lib/apigatewayv2-api';
 import { Apigatewayv2ApiMapping } from '@cdktf/provider-aws/lib/apigatewayv2-api-mapping';
 import { Apigatewayv2DomainName } from '@cdktf/provider-aws/lib/apigatewayv2-domain-name';
-import { Apigatewayv2Integration } from '@cdktf/provider-aws/lib/apigatewayv2-integration';
-import { Apigatewayv2Route } from '@cdktf/provider-aws/lib/apigatewayv2-route';
 import { Apigatewayv2Stage } from '@cdktf/provider-aws/lib/apigatewayv2-stage';
 import { CloudwatchLogGroup } from '@cdktf/provider-aws/lib/cloudwatch-log-group';
+import { CognitoUserPool } from '@cdktf/provider-aws/lib/cognito-user-pool';
+import { CognitoUserPoolClient } from '@cdktf/provider-aws/lib/cognito-user-pool-client';
 import { LambdaFunction } from '@cdktf/provider-aws/lib/lambda-function';
 import { LambdaPermission } from '@cdktf/provider-aws/lib/lambda-permission';
 import { Construct } from 'constructs';
 import { Variables } from './variables';
+import oas from '../generated/<%= namespace %>-<%= name %>-api/oas.json'
 
-export function apiGateway(scope: Construct, certificateArn: string, variables: Variables, lambda: LambdaFunction): Apigatewayv2Api {
+
+export function apiGateway(scope: Construct, certificateArn: string, variables: Variables, lambda: LambdaFunction, pool: CognitoUserPool, client: CognitoUserPoolClient): Apigatewayv2Api {
+
+  const schemaReplaceVars = {
+    functions: { handler: lambda.invokeArn },
+    cognitoPoolEndpoint: `https://${pool.endpoint}`,
+    cognitoAppClientId: client.id
+  }
+
+  const schema = JSON.stringify(oas)
+    .replaceAll('${functions.handler}', schemaReplaceVars.functions.handler)
+    .replaceAll('${cognitoPoolEndpoint}', schemaReplaceVars.cognitoPoolEndpoint)
+    .replaceAll('${cognitoAppClientId}', schemaReplaceVars.cognitoAppClientId);
+
   const gateway = new Apigatewayv2Api(scope, 'api', {
     name: `${variables.namespace}-${variables.name}-api`,
-    protocolType: 'HTTP'
+    protocolType: 'HTTP',
+    version: '1.0.0',
+    body: schema
   });
+
+  new LambdaPermission(scope, 'api-permissions', {
+    sourceArn: `${gateway.executionArn}/*/*/*`,
+    statementId: 'AllowApiGateway',
+    action: 'lambda:InvokeFunction',
+    functionName: lambda.arn,
+    principal: 'apigateway.amazonaws.com'
+  })
 
   const logs = new CloudwatchLogGroup(scope, 'api-logs', {
     name: `/aws/api-gw/${gateway.name}`,
@@ -40,26 +64,6 @@ export function apiGateway(scope: Construct, certificateArn: string, variables: 
         integrationErrorMessage: "$context.integrationErrorMessage"
       })
     }
-  });
-
-  const permission = new LambdaPermission(scope, 'permission', {
-    statementId: 'AllowExecutionFromAPIGateway',
-    action: "lambda:InvokeFunction",
-    functionName: lambda.functionName,
-    principal: "apigateway.amazonaws.com",
-    sourceArn: `${gateway.executionArn}/*/*`
-  });
-
-  const integration = new Apigatewayv2Integration(scope, 'integration', {
-    apiId: gateway.id,
-    integrationType: "AWS_PROXY",
-    integrationUri: lambda.invokeArn
-  })
-
-  const route = new Apigatewayv2Route(scope, 'route', {
-    apiId: gateway.id,
-    routeKey: "GET /<%= name %>/{<%= name %>Id}",
-    target: `integrations/${integration.id}`
   });
 
   const domainName = new Apigatewayv2DomainName(scope, 'custom-domain', {

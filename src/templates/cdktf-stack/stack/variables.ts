@@ -9,6 +9,10 @@ export type Variables = {
   host: string;
   allowed_origins: string;
   code_s3_bucket: string;
+  domain_prefix: string; <% if(type === 'user') { %>
+  google_client_id: string;
+  google_client_secret: string;
+  redirect_uris: string[];<% } %>
 }
 
 export function variables(scope: Construct): Variables {
@@ -41,5 +45,21 @@ export function variables(scope: Construct): Variables {
       type: "string",
       description: "What is the host of the client calling this api for CORS",
     }).stringValue,
+    domain_prefix: new TerraformVariable(scope, "domain_prefix", {
+      type: "string",
+      description: "What is the domain prefix for this environment",
+    }).stringValue,<% if(type === 'user') { %>
+    redirect_uris: new TerraformVariable(scope, "redirect_uri", {
+      type: "list(string)",
+      description: "What is the redirect_uri for the auth providers",
+    }).listValue,
+    google_client_id: new TerraformVariable(scope, "google_client_id", {
+      type: "string",
+      description: "What is client id for the Google client",
+    }).stringValue,
+    google_client_secret: new TerraformVariable(scope, "google_client_secret", {
+      type: "string",
+      description: "What is client secret for the Google client",
+    }).stringValue,<% } %>
   }
 }

@@ -7,7 +7,9 @@ import { Construct } from "constructs";
 import { App, TerraformStack, S3Backend } from "cdktf";
 import { apiGateway } from './api';
 import { createTables, DynamoTables } from './dynamo';
-import { apiLambda } from './lambda';
+import { apiLambdaRole } from './iam';
+import { apiLambda<% if(type === 'user') { %>, triggersLambda<% } %> } from './lambda';<% if(type === 'user') { %>
+  import { createUserPool } from './user-pool';<% } %>
 import { variables, Variables } from './variables';
 
 class Stack extends TerraformStack {
@@ -33,16 +35,19 @@ class Stack extends TerraformStack {
     this.stack();
   }
 
-  apiCertificate(apiPrefix: string, domain: string): AcmCertificate {
-    return new AcmCertificate(this, "ApiCertificate", {
+  apiCertificate(apiPrefix: string, domain: string): AcmCertificateValidation {
+    const certificate =  new AcmCertificate(this, "ApiCertificate", {
       domainName: [apiPrefix, 'api', domain].join('.'),
       subjectAlternativeNames: [domain],
       validationOption: [{domainName: domain, validationDomain: domain}],
       validationMethod: 'DNS'
     });
+    return new AcmCertificateValidation(this, "ApiCertificateValidation", {
+      certificateArn: certificate.arn
+    })
   }
 
-  lambda(tables: DynamoTables){
+  lambdaPackage(): { archive: DataArchiveFile, key: string }{
     const archive = new DataArchiveFile(this, "ApiLambdaZip", {
       type: 'zip',
       sourceDir: '../../../build',
@@ -51,16 +56,23 @@ class Stack extends TerraformStack {
     const code = new S3Object(this, "ApiLambdaCode", {
       source: archive.outputPath,
       bucket: this.vars.code_s3_bucket,
-      key: `${this.vars.namespace}/${this.vars.name}-${this.vars.environment}.dist`,etag: archive.outputMd5
+      key: `${this.vars.namespace}/${this.vars.name}-${this.vars.environment}.dist`,
+      etag: archive.outputMd5
     })
-    return apiLambda(this, archive.outputBase64Sha256, this.vars.code_s3_bucket, code.key, this.vars, tables);
+    return { archive, key: code.key};
   }
 
   stack() {
     const tables: DynamoTables = createTables(this, this.vars, { <%= name %>Table: '<%= name %>' })
     const certificate = this.apiCertificate(this.vars.name, this.vars.domain);
-    const lambda = this.lambda(tables);
-    const api = apiGateway(this, certificate.arn, this.vars, lambda);
+    const archive = this.lambdaPackage();
+    const role = apiLambdaRole(this, Object.values(tables));
+    const apiFunction = apiLambda(this, archive.archive.outputBase64Sha256, archive.key, this.vars, role, tables);
+    <% if(type === 'user') { %>
+    const triggerFunction = triggersLambda(this, archive.archive.outputBase64Sha256, archive.key, this.vars, role, tables);
+    const {pool, client} = createUserPool(this, this.globalProvider, this.vars, triggerFunction.arn);
+    <% } %>
+    const api = apiGateway(this, certificate.certificateArn, this.vars, apiFunction, pool, client);
   }
 }
 

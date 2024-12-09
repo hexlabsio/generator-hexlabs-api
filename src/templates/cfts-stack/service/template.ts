@@ -16,8 +16,8 @@ export default templateBuilder.create('<%= name %>-service/template.json')
     HOST: {type: 'String'},
     ENVIRONMENT: {type: 'String'},
     <%= capitalize(namespace) %><%= capitalize(name) %>ApiCert: { type: 'String' },
-    <%= capitalize(namespace) %>HostedZoneId: { type: 'String' },
-    <%= capitalize(namespace) %>UserPoolArn: { type: 'String' }
+    <%= capitalize(namespace) %>HostedZoneId: { type: 'String' }<% if(type !== 'user') { %>,
+    <%= capitalize(namespace) %>UserPoolArn: { type: 'String' }<% } %>
   })
   .withCondition('IsProd', ({compare}) => compare.equals({ Ref: 'ENVIRONMENT' }, 'production'))
   .build((aws, params) => {
@@ -25,5 +25,8 @@ export default templateBuilder.create('<%= name %>-service/template.json')
     const codeProps = { s3Bucket: params.CodeBucket(), s3Key: params.CodeLocation()};
     const apiLambda = createApiLambda(aws, codeProps, params.HOST(), params.ALLOWEDORIGINS(), tables)
     grantTableAccess(apiLambda.role, 'TableAccess', Object.values(tables));
-    createApi(aws, params.ENVIRONMENT(), params.LinkHostedZoneId(), params.DOMAIN(), params['<%= capitalize(namespace) %><%= capitalize(name) %>ApiCert'](), apiLambda, params['<%= capitalize(namespace) %>UserPoolArn']());
+    <% if(type === 'user') { %>grantTableAccess(triggerLambda.role, 'TableAccess', Object.values(tables));
+    const {userPool} = createUserPool(aws, triggerLambda, params.ENVIRONMENT());
+    triggerLambda.grantInvoke(userPool.attributes.Arn(), 'cognito-idp.amazonaws.com')<% } %>
+    createApi(aws, params.ENVIRONMENT(), params.LinkHostedZoneId(), params.DOMAIN(), params['<%= capitalize(namespace) %><%= capitalize(name) %>ApiCert'](), apiLambda, <% if(type === 'user') { %>userPool.attributes.Arn()<% } %><% if(type !== 'user') { %>params['<%= capitalize(namespace) %>UserPoolArn']()<% } %>);
 })

@@ -2,9 +2,11 @@ import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import { TableClient } from '@hexlabs/dynamo-ts';
 import Api from './api';
-import { apiEnv } from './environment';
+import { apiEnv<% if(type === 'user') { %>, triggerEnv<% } %> } from './environment';
 import <%= capitalize(name) %>Service from './service';
-import * as tables from './tables';
+import * as tables from './tables';<% if(type === 'user') { %>
+import { Triggers } from './triggers';<% } %>
+
 class ApiRuntime {
   private constructor(
     public readonly api: Api,
@@ -24,3 +26,18 @@ class ApiRuntime {
   }
 }
 export const apiRuntime = () => ApiRuntime.initialise();
+<% if(type === 'user') { %>
+class TriggerRuntime {
+  private constructor(
+    public readonly triggers: Triggers,
+    public readonly environment: ReturnType<typeof triggerEnv>,
+  ) {}
+
+  static client = DynamoDBDocument.from(new DynamoDB());
+  static initialise(): TriggerRuntime {
+    const env = triggerEnv();
+    const triggers = new Triggers();
+    return new TriggerRuntime(triggers, env);
+  }
+}
+export const triggerRuntime = () => TriggerRuntime.initialise();<% } %>

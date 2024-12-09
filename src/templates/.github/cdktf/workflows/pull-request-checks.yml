@@ -67,7 +67,9 @@ jobs:
         run: |
           terraform \
           -chdir=cdktf.out/stacks/stack \
-          plan \
+          plan \<% if(type === 'user') { %>
+          -var google_client_id=${{ secrets.CLIENT_GOOGLE_ID_<%= environments[i].name.toUpperCase() %> }} \
+          -var google_client_secret=${{ secrets.CLIENT_GOOGLE_SECRET_<%= environments[i].name.toUpperCase() %> }} \<% } %>
           -var-file variables/<%= environments[i].name %>.tfvars \
           -out <%= environments[i].name %>.plan
 

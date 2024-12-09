@@ -8,7 +8,9 @@ type ThingGeneratorOpts = BaseOptions & {
 }
 
 export default class APIGenerator extends Generator<ThingGeneratorOpts> {
+
   private answers: {
+    type: 'user' | 'general';
     namespace: string;
     port: string;
     name: string;
@@ -36,7 +38,17 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
   }
 
   async prompting() {
-    this.answers = await this.prompt([
+    const type = (await this.prompt([{
+      type: 'list',
+      name: 'type',
+      message: 'What do you want to build',
+      default: 'general',
+      choices: [
+        { name: 'A General Service', value: 'general' },
+        { name: 'A User Service', value: 'user' }
+      ]
+    }])).type;
+    this.answers = { type, ...await this.prompt([
       {
         type: "list",
         name: "deployment",
@@ -74,7 +86,7 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
         type: "input",
         name: "name",
         message: "What name do you want to give to this service",
-        default: "account"
+        default: type === 'user' ? 'user' : 'account',
       },
       {
         type: "list",
@@ -102,7 +114,7 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
         message: "How many environments do you want?",
         default: "2"
       }
-    ]);
+    ]) };
     this.answers.environments = [];
     for(let i = 0;i< this.answers.numEnvs; i++) {
       const environment = await this.prompt([
@@ -144,6 +156,7 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
       capital: this.answers.capitalize(this.answers.name),
       lower: this.answers.name.toLowerCase(),
     }
+    console.log(this.answers);
   }
 
   install() {
@@ -208,6 +221,10 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
     this.fs.copyTpl(this.templatePath(`.github/${this.answers.deployment}/workflows/pull-request-checks.yml`), this.destinationPath(`.github/workflows/pull-request-checks.yml`), {...this.answers}, {});
     if(this.answers.deployment === 'cdktf') {
       this.fs.copyTpl(this.templatePath(`.github/${this.answers.deployment}/actions`), this.destinationPath(`.github/actions`), {...this.answers}, {});
+    }
+    if(this.answers.type === 'user') {
+      this.fs.copyTpl(this.templatePath(`triggers.ts`), this.destinationPath(`src/triggers.ts`), {...this.answers}, {});
+      this.fs.copyTpl(this.templatePath(`api/claims.ts`), this.destinationPath(`src/claims.ts`), {...this.answers}, {});
     }
     this._stackFiles();
   }

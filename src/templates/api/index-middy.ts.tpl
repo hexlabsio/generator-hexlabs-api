@@ -1,9 +1,11 @@
 import middy from '@middy/core';
-import { apiRuntime } from './runtime';
+import { apiRuntime<% if(type === 'user') { %>,triggerRuntime<% } %> } from './runtime';
 import httpHeaderNormalizer from '@middy/http-header-normalizer'
 import cors from '@middy/http-cors'
 import httpErrorHandler from '@middy/http-error-handler'
-import httpRouterHandler from '@middy/http-router'
+import httpRouterHandler from '@middy/http-router'<% if(type === 'user') { %>
+import { CognitoUserPoolTriggerEvent } from 'aws-lambda';
+<% } %>
 
 function apiHandler() {
   const runtime = apiRuntime();
@@ -16,3 +18,8 @@ function apiHandler() {
 
 export const handler = apiHandler();
 
+<% if(type === 'user') { %>
+export async function triggerHandler(event: CognitoUserPoolTriggerEvent) {
+  return triggerRuntime().triggers.handle(event);
+}
+<% } %>
