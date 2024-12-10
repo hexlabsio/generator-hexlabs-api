@@ -9,7 +9,9 @@
     "prebuild": "schema-api-ts generate --template <%= httpLibrary %> --apiVersion ${API_VERSION:-1.0.0} $(pwd)/src/schema/index.ts",
     "build": "rollup -c rollup.config.ts --configPlugin @rollup/plugin-typescript",
     "start": "run-lambda start --cognito-claims $(pwd)/generated/<%= namespace %>-<%= name %>-api/paths.json handler $(pwd)/src/index.ts",<% if(deployment === 'cdktf') { %>
-    "init": "terraform -chdir=cdktf.out/stacks/stack init",
+    "translate": "npx tsx stack/main.ts",
+    "posttranslate": "cp -R stack/variables cdktf.out/stacks/stack/variables",
+    "preplan": "terraform -chdir=cdktf.out/stacks/stack init",
     "plan": "terraform -chdir=cdktf.out/stacks/stack plan -var-file ../../../stack/variables/${ENVIRONMENT:-development}.tfvars",<% } %><% if(deployment === 'cfts') { %>
     "translate": "cloudformation-ts translate $(pwd)/stack/${STACK:-<%= name %>-service}/template.ts",
     "deploy": "cloudformation-ts deploy -r ${REGION} ${ARGS} -f $(pwd)/build -b <%= namespace %>-deploys-${REGION}-${ENVIRONMENT} -p ${NAMESPACE}/ -- ${NAMESPACE}-${ENVIRONMENT} ${STACK}/template.json",

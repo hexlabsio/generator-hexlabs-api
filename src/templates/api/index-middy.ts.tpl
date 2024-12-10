@@ -16,7 +16,9 @@ function apiHandler() {
     .handler(httpRouterHandler(runtime.api.routes()))
 }
 
-export const handler = apiHandler();
+export function handler(...args: any) {
+  return apiHandler()(...args);
+}
 
 <% if(type === 'user') { %>
 export async function triggerHandler(event: CognitoUserPoolTriggerEvent) {

@@ -78,7 +78,7 @@ export function userPool(scope: Construct, variables: Variables, triggers: strin
 function authCertificate(scope: Construct, usEast1Provider: AwsProvider, domain: string): AcmCertificateValidation {
   const certificate =  new AcmCertificate(scope, "auth-certificate", {
     provider: usEast1Provider,
-    domainName: ['auth', domain].join('.'),
+    domainName: ['login', 'auth', domain].join('.'),
     subjectAlternativeNames: [domain],
     validationOption: [{domainName: domain, validationDomain: domain}],
     validationMethod: 'DNS'
@@ -115,7 +115,7 @@ export function createUserPool(
 
   const customDomain = new CognitoUserPoolDomain(scope, 'user-custom-domain', {
     userPoolId: pool.id,
-    domain: `auth.${variables.domain}`,
+    domain: `login.auth.${variables.domain}`,
     certificateArn: authCert.certificateArn
   });
 

@@ -1,3 +1,4 @@
+import { IamRole } from '@cdktf/provider-aws/lib/iam-role';
 import { LambdaFunction, LambdaFunctionEnvironment } from '@cdktf/provider-aws/lib/lambda-function';
 import { Construct } from 'constructs';
 import { ApiEnvironment<% if(type === 'user') { %>, TriggerEnvironment<% } %> } from '../src/environment';

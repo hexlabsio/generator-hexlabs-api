@@ -41,7 +41,7 @@ export function apiGateway(scope: Construct, certificateArn: string, variables: 
   })
 
   const logs = new CloudwatchLogGroup(scope, 'api-logs', {
-    name: `/aws/api-gw/${gateway.name}`,
+    name: `/aws/api-gw/${variables.namespace}-${variables.name}-api`,
     retentionInDays: 30
   });
 
