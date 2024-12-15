@@ -15,7 +15,8 @@ export class Service extends ThingCreator<ServiceAnswers>{
   async write() {
     const isHexlabs = this.answers.httpLibrary === 'hexlabs';
     this.map([
-      '.env', '.gitignore', 'jest.config.js', 'package.json', 'README.md', 'rollup.config.ts', 'tsconfig.json',
+      '.env', 'jest.config.js', 'package.json', 'README.md', 'rollup.config.ts', 'tsconfig.json',
+      { src: '.gitignore.tpl', dest: '.gitignore' },
       { src: isHexlabs ? 'api/hexlabs.ts': 'api/middy.ts', dest: 'src/api/index.ts' },
       { src: isHexlabs ? 'api/index-hexlabs.ts': 'api/index-middy.ts', dest: 'src/index.ts' },
       'src',

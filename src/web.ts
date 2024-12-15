@@ -34,7 +34,7 @@ export class Web extends ThingCreator<WebAnswers>{
       '.github/workflows/pull-request-checks.yml',
       'src',
       'stack',
-      '.gitignore',
+      { src: '.gitignore.tpl', dest: '.gitignore' },
       'package.json',
       'package-lock.json',
       'tsconfig.json',
