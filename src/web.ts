@@ -1,4 +1,3 @@
-import child_process from 'node:child_process';
 import Generator from 'yeoman-generator/dist';
 import { ThingCreator, Type } from './thing-creator.js';
 import { WebAnswers, WebPrompter } from './web-answers.js';

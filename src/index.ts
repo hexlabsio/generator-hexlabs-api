@@ -1,5 +1,4 @@
 import chalk from 'chalk';
-import * as child_process from 'node:child_process';
 import Generator from 'yeoman-generator';
 import type { BaseOptions } from 'yeoman-generator/dist/types';
 import { Service } from './service.js';
@@ -45,7 +44,7 @@ export default class APIGenerator extends Generator<ThingGeneratorOpts> {
   }
 
   end() {
-    await this.thing.end();
+    this.thing.end();
     console.log(chalk.green(
       '          _______           _        _______  ______   _______ \n' +
       '|\\     /|(  ____ \\|\\     /|( \\      (  ___  )(  ___ \\ (  ____ \\\n' +
