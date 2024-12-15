@@ -1,0 +1,93 @@
+name: Check Pull Request
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  verify:
+    name: 'Verify Build'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+      actions: read
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+      - name: 'NPM Install'
+        uses: ./.github/actions/setup-node
+        with:
+          npm-token: ${{ secrets.NPM_PACKAGES_TOKEN }}
+      - name: 'Build'
+        run: npm run build
+      - name: 'Terraform Translate'
+        run: npm run translate
+      - name: 'Test'
+        run: npm test
+      - name: 'Upload Stack'
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'cdktf.out'
+          path: cdktf.out/
+      - name: 'Upload Build'
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'build'
+          path: build/
+<% for(var i=0; i<environments.length; i++) {%>
+  plan-<%= environments[i].name %>:
+    needs: 'verify'
+    name: 'Plan <%= capitalize(environments[i].name) %> Environment'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+      actions: read
+    steps:
+      - name: 'Setup Terraform'
+        uses: hashicorp/setup-terraform@v3
+      - name: 'Download Artifacts'
+        uses: actions/download-artifact@v4
+      - name: 'AWS OIDC Development Auth'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::<%= environments[i].account %>:role/GithubActionsRole
+          role-session-name: GitHubFederateSession
+          aws-region: eu-west-1
+          audience: sts.amazonaws.com
+      - name: 'Terraform Init'
+        run: |
+          terraform \
+          -chdir=cdktf.out/stacks/stack init \
+          -backend-config="bucket=<%= namespace %>-terraform-state-<%= environments[i].name %>"
+
+      - name: 'Terraform Plan'
+        run: |
+          terraform \
+          -chdir=cdktf.out/stacks/stack \
+          plan \<% if(type === 'user') { %>
+          -var google_client_id=${{ secrets.CLIENT_GOOGLE_ID_<%= environments[i].name.toUpperCase() %> }} \
+          -var google_client_secret=${{ secrets.CLIENT_GOOGLE_SECRET_<%= environments[i].name.toUpperCase() %> }} \<% } %>
+          -var-file variables/<%= environments[i].name %>.tfvars \
+          -out <%= environments[i].name %>.plan
+
+      - name: 'Configure j2md'
+        uses: reproio/terraform-j2md@master
+        with:
+          version: v0.0.7
+
+      - name: 'Terraform Show'
+        run: |
+          terraform \
+          -chdir=cdktf.out/stacks/stack \
+          show -json <%= environments[i].name %>.plan > <%= environments[i].name %>.json
+
+      - name: 'Map Plan to Markdown'
+        run: |
+          terraform-j2md < <%= environments[i].name %>.json > <%= environments[i].name %>.md
+          echo "## <%= capitalize(environments[i].name) %> Infrastructure Changes" >> $GITHUB_STEP_SUMMARY
+          cat  <%= environments[i].name %>.md >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+<% } %>

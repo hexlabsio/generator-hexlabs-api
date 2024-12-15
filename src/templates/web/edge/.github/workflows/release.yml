@@ -1,0 +1,58 @@
+name: Release <%= capitalize(environment.name) %>
+concurrency: RUN_ONE_<%= environment.name.toUpperCase() %>
+
+on:
+  <% if(environment.isSecond) { %>release:
+    types: [ published ]<% } %>
+    <% if(!environment.isSecond) { %>workflow_run:
+      workflows: [ <% if(environment.isFirst) { %>'Build'<% } %><% if(!environment.isFirst) { %>'Release <%= capitalize(environment.previous) %>'<% } %> ]
+      types: [ completed ]
+      branches:
+      - 'main'<% } %>
+jobs:
+
+  release:
+    name: 'Release'
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: '<%= environment.name %>'
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+      actions: read
+    steps:
+      - name: 'Download Build Artifacts'
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+          commit: ${{github.sha}}
+          github_token: ${{secrets.GITHUB_TOKEN}}
+      - name: 'AWS OIDC Auth'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::<%= environment.account %>:role/GithubActionsRole
+          role-session-name: GitHubFederateSession
+          aws-region: eu-west-1
+          audience: sts.amazonaws.com
+      - name: 'Terraform Init'
+        run: |
+          terraform \
+          -chdir=cdktf.out/stacks/stack init \
+          -backend-config="bucket=<%= namespace %>-terraform-state-<%= environment.name %>"
+      - name: 'Terraform Plan'
+        run: |
+          terraform \
+          -chdir=cdktf.out/stacks/stack \
+          plan \<% if(type === 'user') { %>
+          -var google_client_id=${{ secrets.CLIENT_GOOGLE_ID_<%= environment.name.toUpperCase() %> }} \
+          -var google_client_secret=${{ secrets.CLIENT_GOOGLE_SECRET_<%= environment.name.toUpperCase() %> }} \<% } %>
+          -var-file variables/<%= environment.name %>.tfvars \
+          -out <%= environment.name %>.plan
+      - name: 'Terraform Apply'
+        run: |
+          terraform \
+          -chdir=cdktf.out/stacks/stack \
+          apply <%= environment.name %>.plan
+        

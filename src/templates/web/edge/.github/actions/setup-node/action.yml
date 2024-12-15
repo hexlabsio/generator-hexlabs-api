@@ -1,0 +1,36 @@
+name: 'NPM Install'
+description: 'Sets up node and runs npm install'
+inputs:
+  npm-token:
+    description: NPM Token
+    required: false
+  node-version:
+    description: Node Version
+    required: false
+    default: '20.x'
+  registry-url:
+    description: NPM Registry
+    required: false
+    default: 'https://npm.pkg.github.com/'
+  npm-scope:
+    description: NPM Scope
+    required: false
+    default: '@<%= githubOrg %>'
+  working-directory:
+    description: Directory to run npm install
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
+        registry-url: ${{ inputs.registry-url }}
+        scope: ${{ inputs.npm-scope }}
+    - name: 'NPM Install'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: 'npm ci && npm install -D @rollup/rollup-linux-x64-gnu'
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.npm-token }}

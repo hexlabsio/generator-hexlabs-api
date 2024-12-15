@@ -1,0 +1,22 @@
+{
+  "name": "@<%= githubOrg %>/<%= namespace %>-<%= name %>-edge",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+  },
+  "scripts": {
+    "translate": "npx tsx stack/main.ts",
+    "posttranslate": "cp -R stack/variables cdktf.out/stacks/stack/variables",
+    "init": "terraform -chdir=cdktf.out/stacks/stack init",
+    "plan": "terraform -chdir=cdktf.out/stacks/stack plan -var-file ../../../stack/variables/${ENVIRONMENT:-development}.tfvars",
+    "test": "echo \"no tests\""
+  },
+  "devDependencies": {
+    "@cdktf/provider-archive": "^10.2.0",
+    "@cdktf/provider-aws": "19.44.0",
+    "@types/aws-lambda": "^8.10.125",
+    "@types/node": "^20.8.9",
+    "typescript": "^5.2.2"
+  }
+}
