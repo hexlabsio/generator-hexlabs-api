@@ -12,7 +12,7 @@ export function edgeLambdaRole(scope: Construct): IamRole {
         actions: ["sts:AssumeRole"],
         principals: [{
           type: 'Service',
-          identifiers: ['edgelambda.amazonaws.com']
+          identifiers: ['edgelambda.amazonaws.com', 'lambda.amazonaws.com']
         }]
       }
     ]

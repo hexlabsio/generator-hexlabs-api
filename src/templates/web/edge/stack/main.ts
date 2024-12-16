@@ -43,6 +43,7 @@ class Stack extends TerraformStack {
       validationMethod: 'DNS'
     });
     return new AcmCertificateValidation(this, "web-certificate-validation", {
+      provider: this.globalProvider,
       certificateArn: certificate.arn
     })
   }
@@ -50,7 +51,7 @@ class Stack extends TerraformStack {
   lambdaPackage(): { archive: DataArchiveFile, key: string }{
     const archive = new DataArchiveFile(this, "edge-lambda-zip", {
       type: 'zip',
-      sourceDir: '../../../edge/build',
+      sourceDir: '../../../build',
       outputPath: '../../../dist.zip',
     });
     const code = new S3Object(this, "edge-lambda-code", {
@@ -68,7 +69,7 @@ class Stack extends TerraformStack {
     const role = edgeLambdaRole(this);
     const edge = edgeLambda(this, this.globalProvider, archive.archive.outputBase64Sha256, archive.key, this.vars, role);
     const cert = this.webCertificate()
-    createWebsite(this, this.vars, edge.arn, cert.certificateArn);
+    createWebsite(this, this.vars, edge.qualifiedArn, cert.certificateArn);
   }
 }
 

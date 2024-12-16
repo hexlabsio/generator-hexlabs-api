@@ -32,7 +32,7 @@ jobs:
       - name: 'AWS OIDC Auth'
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::<%= environment.account %>:role/GithubActionsRole
+          role-to-assume: arn:aws:iam::<%= environment.awsAccountId %>:role/GithubActionsRole
           role-session-name: GitHubFederateSession
           aws-region: eu-west-1
           audience: sts.amazonaws.com

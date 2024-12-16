@@ -23,11 +23,6 @@ jobs:
         with:
           name: 'build'
           path: build/
-      - name: 'Upload Generated'
-        uses: actions/upload-artifact@v4
-        with:
-          name: 'generated'
-          path: generated/
 
   translate:
     name: 'Translate Terraform'

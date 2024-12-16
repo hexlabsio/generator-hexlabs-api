@@ -1,35 +1,21 @@
 {
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
+    "module": "commonjs",
+    "target": "ES2022",
+    "outDir": "build",
+    "sourceMap": true,
+    "declaration": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "downlevelIteration": true,
     "moduleResolution": "node",
-    "module": "ES2022",
-    "target": "ES2022"
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "types": ["node"],
+    "allowJs": true
   },
   "ts-node": {
     "esm": true,
-    "experimentalSpecifierResolution": "node",
-    "compilerOptions": {
-      "module": "ES2022",
-      "target": "ES2022"
-    }
+    "experimentalSpecifierResolution": "node"
   },
-  "include": [
-    "src", "stack"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
 }
